@@ -1,0 +1,4 @@
+PROGRAM_NAME = "UTILITY"
+PROGRAM_VERSION = "0.0"
+MADE_BY = "SEOS"
+RESOURCE_PATH = "py_project//resources//"
