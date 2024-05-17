@@ -2,3 +2,7 @@ PROGRAM_NAME = "UTILITY"
 PROGRAM_VERSION = "0.0"
 MADE_BY = "SEOS"
 RESOURCE_PATH = "py_project//resources//"
+LOGON_EVENT = 4624
+TIME_ZONE = 'Asia/Seoul'
+TIME_READ_FORMAT = "%Y-%m-%dT%H:%M:%S"
+TIME_OUTPUT_FORMAT = "%Y-%m-%d %H:%M:%S"
