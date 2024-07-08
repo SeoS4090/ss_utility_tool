@@ -1,5 +1,6 @@
 import Constant
 import sys
+import WinAlarm
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -12,6 +13,7 @@ class MyApp(QMainWindow):
     super().__init__()
     self.LoadDatas()
     self.initUI()
+    
 
   def initUI(self):
     self.statusBar().showMessage('initUI')
@@ -32,12 +34,15 @@ class MyApp(QMainWindow):
     
     self.setGeometry(300, 300, 300, 200)
     self.show()
+    self.statusBar().showMessage('')
 
 #region Data Load
 
   def LoadDatas(self):
     self.statusBar().showMessage('Data Loading...')
-    self.logonEvent = WinEvt.GetLogonEvent()
+    self.logonEvent = WinEvt.GetEvent("Security",WinEvt.LOGON_QUERY)
+    self.systemOffEvent = WinEvt.GetEvent("System",WinEvt.SYSTEM_OFF_QUERY)
+    
 
 #endregion
 
@@ -86,12 +91,24 @@ class MyApp(QMainWindow):
 #endregion
 
 #region Contents
+
   def CreateContents_Calandar(self):
     frame = QFrame()
+    hbox = QHBoxLayout()
 
     cal = QCalendarWidget()
     cal.setGridVisible(True)
     cal.showToday()
+    
+    hbox.addWidget(cal)
+
+    #---------------------------------------#
+    vbox = QVBoxLayout()
+    gr_data = QGroupBox()
+    gr_data_v = QGridLayout()
+
+    gr_data.setLayout(gr_data_v)
+    vbox.addWidget(gr_data)
 
     selected_date = QLabel(self)
     selected_date.setAlignment(Qt.AlignCenter)
@@ -102,17 +119,24 @@ class MyApp(QMainWindow):
     LogOnTime.setDisplayFormat('hh:mm:ss')
     
     cal.selectionChanged.connect(lambda: self.showDate(selected_date,LogOnTime,cal))
-    gr_data_v = QGridLayout()
     gr_data_v.addWidget(selected_date , 0,1)
     
     label_logonTime = QLabel("OnTime")
     label_logonTime.setAlignment(Qt.AlignCenter)
+
     gr_data_v.addWidget(label_logonTime,1,0)
     gr_data_v.addWidget(LogOnTime,1,1)
-    
-    gr_data = QGroupBox()
-    gr_data.setLayout(gr_data_v)
 
+    label_work_time = QLabel("업무 시간")
+    work_time = QTimeEdit()
+    work_time.setTime(QTime(9,0,0))
+    work_time.setDisplayFormat('hh:mm')
+
+    gr_data_v.addWidget(label_work_time,2,0)
+    gr_data_v.addWidget(work_time,2,1)
+    
+
+    #---------------------------------------#
     btn_Today = QPushButton("오늘")
     btn_Today.clicked.connect(lambda: cal.setSelectedDate(QDate.currentDate()))
 
@@ -122,11 +146,6 @@ class MyApp(QMainWindow):
     gr_func = QGroupBox()
     gr_func.setLayout(gr_func_v)
 
-    hbox = QHBoxLayout()
-    hbox.addWidget(cal)
-  
-    vbox = QVBoxLayout()
-    vbox.addWidget(gr_data)
     vbox.addWidget(gr_func)
     vbox.addStretch(1)
     
@@ -146,6 +165,9 @@ class MyApp(QMainWindow):
     if date in self.logonEvent:
       qtime = QTime.fromString(self.logonEvent[date].strftime('%H:%M:%S'))
       time.setTime(qtime)
+      if(QDateTime.currentDateTime().toString('yyyy-MM-dd') == date):
+        WinAlarm.Show_Toast()
+
     elif QDateTime.currentDateTime().toString('yyyy-MM-dd') == date:
       time.setTime(QTime.currentTime())
       self.logonEvent[date] = datetime.datetime.strptime(QDateTime.currentDateTime().toString('yyyy-MM-dd hh:mm:ss'),Constant.TIME_OUTPUT_FORMAT)

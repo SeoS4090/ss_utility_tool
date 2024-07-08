@@ -13,13 +13,15 @@ INFINITE = 0xFFFFFFFF
 EVTLOG_READ_BUF_LEN_MAX = 0x7FFFF
 
 LOGON_QUERY = "*[System[(EventID=4624)]] and *[EventData[Data[@Name='LogonType'] and (Data='2' or Data='7'or Data='11')]]"
-def get_events_xmls(channel_name="Security", events_batch_num=100, backwards=True):
+SYSTEM_OFF_QUERY = "*[System[(EventID=1074)]]"
+
+def get_events_xmls(channel_name="Security",query = LOGON_QUERY, events_batch_num=100, backwards=True):
     ret = []
     flags = win32evtlog.EvtQueryChannelPath
     if backwards:
         flags |= win32evtlog.EvtQueryReverseDirection
     try:
-        query_results = win32evtlog.EvtQuery(channel_name, flags, LOGON_QUERY, None)
+        query_results = win32evtlog.EvtQuery(channel_name, flags, query, None)
     except pywintypes.error as e:
         print(e)
         return ret
@@ -31,10 +33,10 @@ def get_events_xmls(channel_name="Security", events_batch_num=100, backwards=Tru
     return ret
 
 
-def GetLogonEvent():
-    xmls = get_events_xmls()
+def GetEvent(channel_name="Security",query = LOGON_QUERY,backwards=True):
     CREATE_TIME_TAG = "{http://schemas.microsoft.com/win/2004/08/events/event}TimeCreated"
 
+    xmls = get_events_xmls(channel_name, query)
     
     DATE_FORMAT = "%Y-%m-%d"
 
@@ -70,7 +72,7 @@ if __name__ == "__main__":
         )
     )
 
-    logonResult = GetLogonEvent()
+    logonResult = GetEvent()
     for ret in logonResult:
         print(f'##{ret}| {logonResult[ret].strftime(Constant.TIME_OUTPUT_FORMAT)}')
     
